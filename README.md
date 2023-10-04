@@ -1,70 +1,262 @@
-# Getting Started with Create React App
+# Strapa Bank
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Este projeto foi criado com o BootStrap: [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Instalação
 
-In the project directory, you can run:
+No diretório do projeto execute os comandos:
+
+### `npm install`
+
+Aguarde o procedimento de instalação e execute:
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+O Navegador deve inicializar a seguinte URL:
+[http://localhost:3000](http://localhost:3000)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Instalando o Cypress
 
-### `npm test`
+Instale o cypress na pasta do diretório do projeto:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### `npm install cypress --save-dev`
 
-### `npm run build`
+Aguarde o processo de instalação e execute o comando:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### `npx cypress open`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    describe('template spec', () => {
+    it('passes', () => {
+        cy.visit('http://localhost:3000/')
+        
+    })
+    })
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Removendo validação do EsLint
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Execute o comando:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### `npm i eslint-plugin-cypress`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+​Encontre o arquivo .eslintrc na pasta raíz do projeto e dentro de extends, logo acima do plugin do prettier, adicione mais um plugin nessa lista.​
 
-## Learn More
+ "plugin:cypress/recommended"
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Capturando um texto:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Melhorar o describe do teste
+- Melhorar a validação do it;
+- alterar a tag do campo h1 para o data-test, com o objetivo de manter a integridade de testes futuros;
 
-### Code Splitting
+# 
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+    describe('Pagina Inicial', () => {
+    it('Deve renderizar o h1 com o texto correto', () => {
+        cy.visit('http://localhost:3000/')
+        //cy.get('h1').contains('Experimente mais liberdade no controle da sua vida financeira. Crie sua conta com a gente!')
+        cy.get('[data-test="titulo-principal"]').contains('Experimente mais liberdade no controle da sua vida financeira. Crie sua conta com a gente!')
+    })
+    })
 
-### Analyzing the Bundle Size
+## Comando personalizados
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+https://docs.cypress.io/api/cypress-api/custom-commands#Syntax
 
-### Making a Progressive Web App
+Na pasta support, no arquivo de comandos  adicionar a linha:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+    Cypress.Commands.add('getByData', (seletor) => {
+    return cy.get(`[data-test=${seletor}]`)
+    })
 
-### Advanced Configuration
+Parar a instancia do cypress e rodar novamente!
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Alterando o cenário de testes para usar o comando customizado:
 
-### Deployment
+    describe('Página inicial', () => {
+    it('Deve renderizar o h1 com o texto correto', () => {
+        cy.visit('http://localhost:3000/');
+    })
+        cy.getByData('titulo-principal').contains(
+        'Experimente mais liberdade no controle da sua vida financeira. Crie sua conta com a gente!'
+        );
+    });
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
-### `npm run build` fails to minify
+Como boa pratica a url está dentro do cenário de testes e é executada todas as vezes, então é possível adicionar o comando beforeEach dentro do describe
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+    describe('Pagina Inicial', () => {
+    beforeEach(()=>
+        cy.visit('http://localhost:3000/')
+    )
+    it('Deve renderizar o h1 com o texto correto', () => {
+        
+        //cy.get('h1').contains('Experimente mais liberdade no controle da sua vida financeira. Crie sua conta com a gente!')
+        cy.getByData('titulo-principal').contains(
+        'Experimente mais liberdade no controle da sua vida financeira. Crie sua conta com a gente!'
+        );
+    })
+    })
+
+Documentação para o 'contains' https://docs.cypress.io/api/commands/contains
+
+Se o conteúdo do elemento fosse alterado, eu gostaria que o teste falhasse?
+
+Se a resposta for sim, então use o comando contains(). Agora se a resposta for não, então use um data-atribute.
+
+## Comando encadeados
+
+https://docs.cypress.io/guides/core-concepts/introduction-to-cypress#Chains-of-Commands
+
+
+Desafio:
+
+O desafio é o seguinte: Você terá que criar um comando personalizado que recebe dois parâmetros, 
+um seletor e um texto e verifica se esse seletor possui o texto informado.
+
+    Cypress.Commands.add('verificaTexto', (seletor, texto) => {
+    cy.get(`${seletor}`).contains(`${texto}`)
+    })
+
+
+## Testando Formulários
+
+    describe('Formulario de login', ()=>{
+        beforeEach(()=>{
+            cy.visit('http://localhost:3000')
+        })
+
+        it('Não deve permitir um email invalido',()=>{
+            cy.getByData('botao-login').click()
+            cy.getByData('email-input').type('andres@strapa.com.br')
+            cy.getByData('senha-input').type('123456')
+            cy.getByData('botao-enviar').click()
+    //        cy.getByData('mensagem-erro').should('exist').and('have.text', 'O email digitado é inválido')
+            cy.get('span').should('exist').and('have.text', 'E-mail ou senha incorretos')
+
+        })
+
+    })
+
+## Formulário de cadastro
+
+    describe('Formulário Cadastro', ()=>{
+    beforeEach(()=>{
+        cy.visit('http://localhost:3000')
+    })
+
+    it('Usuário deve conseguir se cadastrar com sucesso', ()=>{
+
+    })
+    })
+
+#
+    describe('Formulário Cadastro', ()=>{
+    beforeEach(()=>{
+        cy.visit('http://localhost:3000')
+    })
+
+    it('Usuário deve conseguir se cadastrar com sucesso', ()=>{
+        cy.getByData('botao-cadastro').click()
+        cy.getByData('nome-input').type('Bob Esponja')
+        cy.getByData('email-input').type('bob@email.com')
+        cy.getByData('senha-input').type('456789')
+        cy.getByData('botao-enviar').click()
+        cy.getByData('mensagem-sucesso').should('exist').and('have.text', 'Usuário cadastrado com sucesso!')
+    })
+    })
+
+#
+    describe('Formulário Cadastro', ()=>{
+        beforeEach(()=>{
+        cy.visit('http://localhost:3000')
+        })
+    
+        it('Usuário deve conseguir se cadastrar com sucesso', ()=>{
+        cy.getByData('botao-cadastro').click()
+        cy.getByData('nome-input').type('Steve Jobs')
+        cy.getByData('email-input').type('steve@email.com')
+        cy.getByData('senha-input').type('456789')
+        cy.getByData('botao-enviar').click()
+        cy.getByData('mensagem-sucesso').should('exist').and('have.text', 'Usuário cadastrado com sucesso!')
+        })
+    })
+
+## Configurando uma baseUrl
+
+Acesse o arquivo cypress.config.js
+
+    const { defineConfig } = require("cypress");
+
+    module.exports = defineConfig({
+    e2e: {
+        baseUrl: 'http://localhost:3000'
+    },
+    });
+
+Em um novo arquivo de testes: paginas.cy.js
+
+    describe('Testando múltiplas páginas', () => {
+    it('Deve conseguir acessar a página de cartões', ()=>{
+        cy.visit('/')
+    })
+    })
+
+#
+
+    describe('Testando múltiplas páginas', () => {
+        it('Deve conseguir acessar a página de cartões', ()=>{
+        cy.visit('/')
+        cy.getByData('botao-login').click()
+        cy.getByData('email-input').type('andre@strapa.com.br')
+        cy.getByData('senha-input').type('123456')
+        cy.getByData('botao-enviar').click()
+
+        cy.location('pathname').should('eq','/home')
+
+        cy.getByData('app-home').find('a').eq(1).click()
+        cy.getByData('titulo-cartoes').should('exist').and('have.text', 'Meus cartões')
+
+        cy.location('pathname').should('eq','/cartoes')
+
+        })
+    })
+
+## Jornada do Usuário
+
+    describe('Jornadas de usuário', () => {
+        it('Deve permitir que a pessoa usuária acesse a aplicação, realize uma transação e faça um logout', () => {
+        cy.visit('/');
+    
+        cy.getByData('botao-login').click();
+        cy.getByData('email-input').type('andre@strapa.com.br');
+        cy.getByData('senha-input').type('123456');
+        cy.getByData('botao-enviar').click();
+    
+        cy.location('pathname').should('eq', '/home');
+    
+        cy.getByData('select-opcoes').select('Transferência');
+        cy.getByData('form-input').type('80');
+        cy.getByData('realiza-transacao').click();
+    
+        cy.getByData('lista-transacoes').find('li').last().contains('- R$ 80');
+    
+        cy.getByData('botao-sair').click();
+        cy.location('pathname').should('eq', '/');
+        })
+    })
+
+## Desafio
+
+Escreva uma jornada de usuário para o cadastro de um novo usuário
+
+
+## Rodar os testes no terminal 
+
+    npx cypress run
+
+    npx cypress run "./cypress/e2e/paginas.cy.js"
+
+    npx cypress run -- browser edge
